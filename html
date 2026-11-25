@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A-Level จีน พิชิตด่านจอมยุทธ์ (A-Level Chinese Quest)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Kanit & Noto Sans SC -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Kanit', sans-serif;
+            background: linear-gradient(135deg, #fdf2f8 0%, #eff6ff 50%, #f5f3ff 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            user-select: none;
+        }
+        .zh-font {
+            font-family: 'Noto Sans SC', sans-serif;
+        }
+        /* Custom Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+        @keyframes attackRight {
+            0% { transform: translateX(0) scale(1); }
+            40% { transform: translateX(45px) scale(1.15); }
+            100% { transform: translateX(0) scale(1); }
+        }
+        @keyframes attackLeft {
+            0% { transform: translateX(0) scale(1); }
+            40% { transform: translateX(-45px) scale(1.15); }
+            100% { transform: translateX(0) scale(1); }
+        }
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.85) translateY(12px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.5); }
+            50% { box-shadow: 0 0 0 12px rgba(236, 72, 153, 0); }
+        }
+        .animate-float { animation: float 3s ease-in-out infinite; }
+        .animate-shake { animation: shake 0.45s ease-in-out; }
+        .animate-attack-hero { animation: attackRight 0.45s cubic-bezier(0.22, 1, 0.36, 1); }
+        .animate-attack-boss { animation: attackLeft 0.45s cubic-bezier(0.22, 1, 0.36, 1); }
+        .animate-pop-in { animation: popIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-pulse-glow { animation: pulseGlow 2s infinite; }
+
+        /* 3D Arcade Button Style */
+        .btn-3d {
+            transition: all 0.12s ease;
+            border-bottom-width: 5px;
+        }
+        .btn-3d:active:not(:disabled) {
+            transform: translateY(3px);
+            border-bottom-width: 2px;
+        }
+        
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="text-slate-800 flex flex-col items-center justify-between p-3 sm:p-5">
+
+    <!-- Top Navigation / Status Header -->
+    <header id="gameHeader" class="w-full max-w-4xl bg-white/90 backdrop-blur-md rounded-2xl shadow-lg border-2 border-purple-100 px-4 py-3 mb-4 flex flex-wrap items-center justify-between gap-2 z-20">
+        <!-- Left: Logo & Back to Map -->
+        <div class="flex items-center gap-2 sm:gap-3">
+            <button id="btnMapNav" onclick="showScreen('map')" class="hidden bg-purple-100 hover:bg-purple-200 text-purple-700 font-semibold px-3 py-1.5 rounded-xl text-sm transition flex items-center gap-1 shadow-sm">
+                <span>🗺️</span> <span class="hidden sm:inline">แผนที่ด่าน</span>
+            </button>
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">🥋</span>
+                <div>
+                    <h1 class="font-extrabold text-sm sm:text-base bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent leading-tight">
+                        A-Level จีน พิชิตด่านจอมยุทธ์
+                    </h1>
+                    <p class="text-[11px] text-slate-400 font-medium hidden sm:block">A-Level Chinese Quest • 9 ด่านทดสอบ</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Center: HP, Score & Combo -->
+        <div id="hudStats" class="hidden flex items-center gap-2 sm:gap-4">
+            <!-- HP Hearts -->
+            <div class="flex items-center bg-rose-50 border border-rose-200 px-2.5 py-1 rounded-xl" title="พลังชีวิต (HP)">
+                <div id="hpDisplay" class="flex gap-1 text-base sm:text-lg">❤️❤️❤️</div>
+            </div>
+
+            <!-- Score -->
+            <div class="flex items-center gap-1.5 bg-amber-50 border border-amber-200 px-3 py-1 rounded-xl">
+                <span class="text-base">🏆</span>
+                <span id="scoreDisplay" class="font-bold text-amber-700 text-sm sm:text-base">0</span>
+            </div>
+
+            <!-- Combo Badge -->
+            <div id="comboBadge" class="hidden items-center gap-1 bg-gradient-to-r from-orange-500 to-pink-500 text-white font-extrabold px-2.5 py-1 rounded-xl text-xs sm:text-sm shadow-md animate-bounce">
+                <span>🔥</span>
+                <span id="comboText">x2</span>
+            </div>
+        </div>
+
+        <!-- Right: Toggles (Pinyin & Sound) -->
+        <div class="flex items-center gap-2">
+            <!-- Pinyin Toggle -->
+            <button id="btnPinyinToggle" onclick="togglePinyin()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold border-2 transition shadow-sm bg-sky-500 text-white border-sky-600" title="เปิด/ปิด พินอิน">
+                <span>🔤</span>
+                <span>พินอิน: <strong id="pinyinStatusText">เปิด</strong></span>
+            </button>
+
+            <!-- Sound Toggle -->
+            <button id="btnSoundToggle" onclick="toggleSound()" class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition shadow-sm" title="เปิด/ปิด เสียงเอฟเฟกต์">
+                <span id="soundIcon" class="text-base sm:text-lg">🔊</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="w-full max-w-4xl flex-grow flex flex-col items-center justify-center relative">
+
+        <!-- ==================== 1. START SCREEN ==================== -->
+        <section id="screenStart" class="w-full bg-white rounded-3xl shadow-xl border-4 border-purple-100 p-6 sm:p-10 text-center animate-pop-in relative overflow-hidden">
+            <!-- Decorative Background Circles -->
+            <div class="absolute -top-12 -left-12 w-40 h-40 bg-pink-200/40 rounded-full blur-2xl pointer-events-none"></div>
+            <div class="absolute -bottom-12 -right-12 w-48 h-48 bg-sky-200/50 rounded-full blur-2xl pointer-events-none"></div>
+
+            <div class="inline-block bg-gradient-to-r from-pink-500 to-orange-400 text-white text-xs sm:text-sm font-bold px-4 py-1 rounded-full mb-4 shadow-sm">
+                ✨ ตะลุยโจทย์คำศัพท์ & สำนวน A-Level ภาษาจีน
+            </div>
+
+            <!-- Hero Avatar Showcase -->
+            <div class="flex justify-center items-center gap-4 my-4">
+                <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-gradient-to-br from-sky-400 to-indigo-500 flex items-center justify-center text-5xl sm:text-6xl shadow-lg border-4 border-white animate-float">
+                    🐼
+                </div>
+                <div class="text-3xl font-black text-pink-500">VS</div>
+                <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-gradient-to-br from-rose-500 to-purple-600 flex items-center justify-center text-5xl sm:text-6xl shadow-lg border-4 border-white animate-float" style="animation-delay: 0.6s;">
+                    👹
+                </div>
+            </div>
+
+            <h2 class="text-2xl sm:text-4xl font-extrabold text-slate-800 mb-2">
+                A-Level จีน <span class="bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">พิชิตด่านจอมยุทธ์</span>
+            </h2>
+            <p class="text-slate-600 text-sm sm:text-base max-w-xl mx-auto mb-6 leading-relaxed">
+                สวมบทบาท <strong class="text-indigo-600">"จอมยุทธ์น้อย"</strong> ผจญภัยฝ่าด่านทดสอบทั้ง <strong>9 ด่าน (3 โซน)</strong> เพื่อปราบบอสใหญ่แห่งหุบเขาสำนวนจีน! สะสมคอมโบ เก็บดาว และเรียนรู้คำอธิบายละเอียดทุกข้อ
+            </p>
+
+            <!-- Feature Badges -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 max-w-2xl mx-auto mb-8 text-xs sm:text-sm">
+                <div class="bg-pink-50 border border-pink-200 rounded-2xl p-3 font-medium text-pink-800">
+                    <div class="text-xl mb-1">🗺️</div>
+                    9 ด่านผจญภัย
+                </div>
+                <div class="bg-sky-50 border border-sky-200 rounded-2xl p-3 font-medium text-sky-800">
+                    <div class="text-xl mb-1">🔤</div>
+                    เปิด/ปิดพินอินได้
+                </div>
+                <div class="bg-amber-50 border border-amber-200 rounded-2xl p-3 font-medium text-amber-800">
+                    <div class="text-xl mb-1">🔥</div>
+                    ระบบคอมโบ & ดาว
+                </div>
+                <div class="bg-purple-50 border border-purple-200 rounded-2xl p-3 font-medium text-purple-800">
+                    <div class="text-xl mb-1">📖</div>
+                    เฉลยละเอียดทุกข้อ
+                </div>
+            </div>
+
+            <button onclick="startNewGame()" class="btn-3d animate-pulse-glow bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-600 hover:from-pink-600 hover:to-indigo-700 text-white font-extrabold text-lg sm:text-xl px-10 py-4 rounded-2xl border-indigo-800 shadow-xl cursor-pointer inline-flex items-center gap-3">
+                <span>⚔️</span>
+                <span>เริ่มการผจญภัยเลย!</span>
+            </button>
+        </section>
+
+        <!-- ==================== 2. STAGE MAP SCREEN ==================== -->
+        <section id="screenMap" class="hidden w-full bg-white rounded-3xl shadow-xl border-4 border-sky-100 p-5 sm:p-8 animate-pop-in">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6 border-b border-slate-100 pb-4">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-extrabold text-slate-800 flex items-center gap-2">
+                        <span>🗺️</span> แผนที่เส้นทางจอมยุทธ์ (เลือกด่านท้าประลอง)
+                    </h2>
+                    <p class="text-slate-500 text-xs sm:text-sm">พิชิตให้ครบทั้ง 9 ด่านเพื่อปลดล็อกฉายาปรมาจารย์ A-Level!</p>
+                </div>
+                <div class="flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-2xl border border-slate-200 self-start sm:self-auto">
+                    <span class="text-sm font-semibold text-slate-600">ความคืบหน้า:</span>
+                    <span id="mapProgressText" class="font-extrabold text-purple-600 text-base">0 / 9 ด่าน</span>
+                </div>
+            </div>
+
+            <!-- 3 Zones Grid -->
+            <div id="zonesContainer" class="space-y-6">
+                <!-- Zones & Stages will be rendered here by JS -->
+            </div>
+
+            <!-- Bottom Actions on Map -->
+            <div class="mt-6 pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+                <button onclick="resetGameConfirm()" class="text-xs sm:text-sm text-slate-500 hover:text-rose-600 font-medium underline cursor-pointer">
+                    🔄 รีเซ็ตความคืบหน้า (เริ่มใหม่ทั้งหมด)
+                </button>
+                <button id="btnViewSummaryFromMap" onclick="showSummaryScreen()" class="hidden btn-3d bg-amber-400 hover:bg-amber-500 text-amber-950 font-bold px-5 py-2.5 rounded-xl border-amber-600 text-sm shadow-md cursor-pointer">
+                    🏆 ดูสรุปผลคะแนน & ทบทวนคำศัพท์
+                </button>
+            </div>
+        </section>
+
+        <!-- ==================== 3. BATTLE / QUIZ SCREEN ==================== -->
+        <section id="screenBattle" class="hidden w-full bg-white rounded-3xl shadow-xl border-4 border-pink-100 p-4 sm:p-7 animate-pop-in">
+            <!-- Stage Top Info -->
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                <div class="flex items-center gap-2">
+                    <span id="battleZoneBadge" class="bg-purple-100 text-purple-700 text-xs font-bold px-3 py-1 rounded-full">
+                        โซนที่ 1
+                    </span>
+                    <span id="battleStageTitle" class="font-extrabold text-slate-800 text-base sm:text-lg">
+                        ด่านที่ 1
+                    </span>
+                </div>
+                <span id="battleDifficultyBadge" class="text-xs font-bold px-3 py-1 rounded-full bg-sky-100 text-sky-700">
+                    ระดับ: ศิษย์สำนักต้น
+                </span>
+            </div>
+
+            <!-- Battle Arena Visual -->
+            <div id="battleArena" class="relative w-full rounded-2xl p-4 sm:p-6 mb-5 overflow-hidden border-2 border-indigo-100 bg-gradient-to-r from-sky-100 via-purple-50 to-pink-100 flex items-center justify-between">
+                <!-- Player Character -->
+                <div class="flex flex-col items-center z-10 w-1/3">
+                    <div class="bg-white/90 px-2.5 py-0.5 rounded-full text-[11px] sm:text-xs font-bold text-indigo-700 shadow-sm mb-1.5">
+                        จอมยุทธ์น้อย (คุณ)
+                    </div>
+                    <div id="heroSprite" class="w-16 h-16 sm:w-22 sm:h-22 rounded-2xl bg-gradient-to-br from-sky-400 to-indigo-600 flex items-center justify-center text-4xl sm:text-5xl shadow-md border-2 border-white">
+                        🐼
+                    </div>
+                </div>
+
+                <!-- Center VS / Action Text -->
+                <div class="flex flex-col items-center justify-center z-10 text-center w-1/3">
+                    <div id="battleStatusEmoji" class="text-2xl sm:text-3xl mb-1">⚔️</div>
+                    <div id="battleActionText" class="text-xs sm:text-sm font-bold text-slate-600 bg-white/80 px-3 py-1 rounded-full shadow-sm">
+                        เลือกคำตอบเพื่อโจมตี!
+                    </div>
+                </div>
+
+                <!-- Enemy / Boss Character -->
+                <div class="flex flex-col items-center z-10 w-1/3">
+                    <div id="bossNameBadge" class="bg-rose-600 text-white px-2.5 py-0.5 rounded-full text-[11px] sm:text-xs font-bold shadow-sm mb-1.5">
+                        ผู้พิทักษ์ด่าน 1
+                    </div>
+                    <div id="bossSprite" class="w-16 h-16 sm:w-22 sm:h-22 rounded-2xl bg-gradient-to-br from-orange-400 to-rose-600 flex items-center justify-center text-4xl sm:text-5xl shadow-md border-2 border-white">
+                        🦊
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-5 sm:p-6 mb-5 text-center shadow-inner">
+                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                    จงเลือกคำศัพท์หรือสำนวนที่เหมาะสมที่สุดเติมลงในช่องว่าง
+                </div>
+                
+                <!-- Chinese Sentence -->
+                <p id="questionChinese" class="zh-font text-2xl sm:text-3xl md:text-4xl font-bold text-slate-800 leading-relaxed tracking-wide mb-2">
+                    他每天都能_________到学校，从不迟到。
+                </p>
+
+                <!-- Pinyin Sentence (Toggleable) -->
+                <p id="questionPinyin" class="text-sm sm:text-base font-medium text-sky-600 transition-all">
+                    Tā měitiān dōu néng _________ dào xuéxiào, cóng bù chídào.
+                </p>
+            </div>
+
+            <!-- 4 Multiple Choice Options -->
+            <div id="optionsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <!-- Options rendered by JS -->
+            </div>
+        </section>
+
+        <!-- ==================== 4. SUMMARY / VICTORY SCREEN ==================== -->
+        <section id="screenSummary" class="hidden w-full bg-white rounded-3xl shadow-xl border-4 border-amber-200 p-6 sm:p-8 animate-pop-in">
+            <div class="text-center mb-6">
+                <div id="summaryTrophy" class="text-6xl sm:text-7xl mb-3 animate-bounce">🏆</div>
+                <div class="inline-block bg-amber-100 text-amber-800 text-xs sm:text-sm font-bold px-4 py-1 rounded-full mb-2">
+                    ภารกิจเสร็จสิ้น!
+                </div>
+                <h2 id="summaryRankTitle" class="text-2xl sm:text-4xl font-black bg-gradient-to-r from-amber-500 via-pink-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                    ปรมาจารย์ A-Level ภาษาจีน
+                </h2>
+                <p id="summarySubtitle" class="text-slate-600 text-sm sm:text-base">
+                    สุดยอดมาก! คุณพิชิตข้อสอบ A-Level ภาษาจีนได้สำเร็จ!
+                </p>
+            </div>
+
+            <!-- Score & Stats Cards -->
+            <div class="grid grid-cols-3 gap-3 max-w-xl mx-auto mb-6 text-center">
+                <div class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-3 sm:p-4">
+                    <div class="text-xs text-amber-700 font-semibold">คะแนนรวม</div>
+                    <div id="finalScoreText" class="text-2xl sm:text-3xl font-black text-amber-600">0</div>
+                </div>
+                <div class="bg-pink-50 border-2 border-pink-200 rounded-2xl p-3 sm:p-4">
+                    <div class="text-xs text-pink-700 font-semibold">ดาวที่สะสม</div>
+                    <div id="finalStarsText" class="text-2xl sm:text-3xl font-black text-pink-600">0 / 27 ⭐</div>
+                </div>
+                <div class="bg-sky-50 border-2 border-sky-200 rounded-2xl p-3 sm:p-4">
+                    <div class="text-xs text-sky-700 font-semibold">คอมโบสูงสุด</div>
+                    <div id="finalMaxComboText" class="text-2xl sm:text-3xl font-black text-sky-600">x0</div>
+                </div>
+            </div>
+
+            <!-- Vocabulary Review List -->
+            <div class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 sm:p-5 mb-6">
+                <h3 class="font-extrabold text-slate-800 text-base sm:text-lg mb-3 flex items-center gap-2">
+                    <span>📚</span> สรุปคลังคำศัพท์ & สำนวนที่พบในเกม (9 ข้อ)
+                </h3>
+                <div id="vocabReviewList" class="space-y-2.5 max-h-72 overflow-y-auto pr-1">
+                    <!-- Rendered by JS -->
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <button onclick="showScreen('map')" class="btn-3d w-full sm:w-auto bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold px-6 py-3.5 rounded-2xl border-slate-300 cursor-pointer">
+                    🗺️ กลับไปดูแผนที่ด่าน
+                </button>
+                <button onclick="replayWithShuffle()" class="btn-3d w-full sm:w-auto bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-extrabold px-8 py-3.5 rounded-2xl border-purple-800 shadow-lg cursor-pointer">
+                    🔄 เล่นใหม่อีกครั้ง (สลับลำดับตัวเลือก)
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ==================== EXPLANATION MODAL POPUP ==================== -->
+    <div id="explanationModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-5">
+        <div class="bg-white w-full max-w-xl rounded-3xl shadow-2xl border-4 border-purple-200 overflow-hidden animate-pop-in flex flex-col max-h-[90vh]">
+            <!-- Modal Header -->
+            <div id="modalHeaderBanner" class="px-6 py-4 text-white flex items-center justify-between bg-gradient-to-r from-emerald-500 to-teal-600">
+                <div class="flex items-center gap-3">
+                    <span id="modalResultIcon" class="text-3xl">🎉</span>
+                    <div>
+                        <h3 id="modalResultTitle" class="font-extrabold text-lg sm:text-xl">ยอดเยี่ยม! ตอบถูกต้อง</h3>
+                        <p id="modalScoreEarned" class="text-xs sm:text-sm text-white/90 font-medium">+100 คะแนน!</p>
+                    </div>
+                </div>
+                <div id="modalStarsEarned" class="text-xl sm:text-2xl tracking-widest">⭐⭐⭐</div>
+            </div>
+
+            <!-- Modal Content (Scrollable) -->
+            <div class="p-5 sm:p-6 overflow-y-auto space-y-4">
+                <!-- Correct Answer Box -->
+                <div class="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-4">
+                    <div class="text-xs font-bold text-emerald-700 mb-1">✅ คำตอบที่ถูกต้อง:</div>
+                    <div class="flex flex-wrap items-baseline gap-2">
+                        <span id="modalCorrectWord" class="zh-font text-2xl sm:text-3xl font-black text-emerald-800">按时</span>
+                        <span id="modalCorrectPinyin" class="text-base sm:text-lg font-bold text-emerald-600">(ànshí)</span>
+                        <span id="modalCorrectMeaning" class="text-sm sm:text-base font-semibold text-slate-700">— ตรงเวลา / ตามเวลาที่กำหนด</span>
+                    </div>
+                </div>
+
+                <!-- Full Sentence Translation -->
+                <div class="bg-sky-50 border border-sky-200 rounded-2xl p-3.5">
+                    <div class="text-xs font-bold text-sky-700 mb-1">💬 ประโยคสมบูรณ์ & คำแปล:</div>
+                    <p id="modalFullSentence" class="zh-font font-bold text-slate-800 text-base sm:text-lg">他每天都能按时到学校，从不迟到。</p>
+                    <p id="modalSentenceTrans" class="text-slate-600 text-xs sm:text-sm mt-1">เขาสามารถมาถึงโรงเรียนได้ตรงเวลาทุกวัน ไม่เคยมาสายเลย</p>
+                </div>
+
+                <!-- Detailed Explanation -->
+                <div class="bg-purple-50/70 border border-purple-200 rounded-2xl p-4">
+                    <div class="text-xs font-bold text-purple-700 mb-1.5">📖 คำอธิบายเจาะลึก & เปรียบเทียบตัวเลือกอื่น:</div>
+                    <p id="modalExplanationText" class="text-slate-700 text-sm leading-relaxed">
+                        คำอธิบาย...
+                    </p>
+                </div>
+            </div>
+
+            <!-- Modal Footer Button -->
+            <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-end">
+                <button id="btnModalNext" onclick="handleModalNext()" class="btn-3d w-full sm:w-auto bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-extrabold px-8 py-3 rounded-2xl border-indigo-800 shadow-md cursor-pointer text-base">
+                    ไปด่านถัดไป ➡️
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== GAME OVER / RETRY STAGE MODAL ==================== -->
+    <div id="gameOverModal" class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl border-4 border-rose-200 p-6 text-center animate-pop-in">
+            <div class="text-6xl mb-3">💔</div>
+            <h3 class="text-2xl font-extrabold text-rose-600 mb-2">พลังชีวิตหมดแล้ว!</h3>
+            <p class="text-slate-600 text-sm mb-6">
+                ไม่เป็นไรนะจอมยุทธ์! การฝึกฝนคือหนทางสู่ความสำเร็จ ลองท้าประลองด่านนี้อีกครั้งได้เลย
+            </p>
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <button onclick="closeGameOverToMap()" class="btn-3d bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-5 py-3 rounded-xl border-slate-300 cursor-pointer">
+                    🗺️ กลับแผนที่
+                </button>
+                <button onclick="retryCurrentStage()" class="btn-3d bg-gradient-to-r from-rose-500 to-orange-500 text-white font-extrabold px-6 py-3 rounded-xl border-rose-700 shadow-md cursor-pointer">
+                    ⚔️ ฟื้นพลัง & สู้ด่านนี้อีกครั้ง
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== CUSTOM CONFIRM MODAL (No window.confirm) ==================== -->
+    <div id="confirmResetModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-3xl shadow-2xl border-4 border-amber-200 p-6 text-center animate-pop-in">
+            <div class="text-5xl mb-2">🔄</div>
+            <h3 class="text-xl font-extrabold text-slate-800 mb-2">เริ่มเกมใหม่ทั้งหมด?</h3>
+            <p class="text-slate-600 text-sm mb-5">คะแนน ดาว และความคืบหน้าของด่านทั้งหมดจะถูกรีเซ็ตเป็น 0</p>
+            <div class="flex gap-3 justify-center">
+                <button onclick="document.getElementById('confirmResetModal').classList.add('hidden')" class="btn-3d bg-slate-100 text-slate-700 font-bold px-5 py-2.5 rounded-xl border-slate-300 cursor-pointer">
+                    ยกเลิก
+                </button>
+                <button onclick="executeFullReset()" class="btn-3d bg-rose-500 text-white font-bold px-5 py-2.5 rounded-xl border-rose-700 cursor-pointer">
+                    ยืนยันเริ่มใหม่
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="w-full max-w-4xl text-center text-xs text-slate-400 mt-4 pb-1">
+        ฝึกฝนคำศัพท์และไวยากรณ์ A-Level ภาษาจีน • ครบทั้ง 9 ด่านพร้อมระบบพินอินและเฉลยละเอียด
+    </footer>
+
+    <!-- ==================== JAVASCRIPT GAME LOGIC ==================== -->
+    <script>
+        // ==========================================
+        // 1. WEB AUDIO API SOUND SYNTHESIZER
+        // ==========================================
+        let soundEnabled = true;
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            try {
+                initAudio();
+                const now = audioCtx.currentTime;
+
+                if (type === 'click') {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(520, now);
+                    osc.frequency.exponentialRampToValueAtTime(780, now + 0.08);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                } 
+                else if (type === 'correct') {
+                    // Cheerful ascending chime
+                    const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+                    notes.forEach((freq, idx) => {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(freq, now + idx * 0.07);
+                        gain.gain.setValueAtTime(0.2, now + idx * 0.07);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.07 + 0.25);
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.start(now + idx * 0.07);
+                        osc.stop(now + idx * 0.07 + 0.25);
+                    });
+                } 
+                else if (type === 'wrong') {
+                    // Low buzz / hit sound
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(200, now);
+                    osc.frequency.linearRampToValueAtTime(110, now + 0.35);
+                    gain.gain.setValueAtTime(0.22, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.35);
+                } 
+                else if (type === 'victory') {
+                    // Fanfare
+                    const melody = [
+                        { f: 523.25, t: 0, d: 0.12 },
+                        { f: 659.25, t: 0.12, d: 0.12 },
+                        { f: 783.99, t: 0.24, d: 0.12 },
+                        { f: 1046.50, t: 0.36, d: 0.35 },
+                        { f: 783.99, t: 0.72, d: 0.15 },
+                        { f: 1046.50, t: 0.88, d: 0.5 }
+                    ];
+                    melody.forEach(n => {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(n.f, now + n.t);
+                        gain.gain.setValueAtTime(0.22, now + n.t);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + n.t + n.d);
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.start(now + n.t);
+                        osc.stop(now + n.t + n.d);
+                    });
+                }
+            } catch (e) {
+                console.warn('Audio play prevented:', e);
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            document.getElementById('soundIcon').textContent = soundEnabled ? '🔊' : '🔇';
+            if (soundEnabled) playSound('click');
+        }
+
+        // ==========================================
+        // 2. GAME DATA (ALL 9 A-LEVEL QUESTIONS)
+        // ==========================================
+        const STAGES_DATA = [
+            {
+                id: 1,
+                zone: 1,
+                zoneName: "โซน 1: ป่าไผ่เริ่มต้น",
+                bossName: "จิ้งจอกตรงเวลา",
+                bossEmoji: "🦊",
+                difficulty: "ด่านฝึกตน",
+                sentence: "他每天都能_________到学校，从不迟到。",
+                pinyin: "Tā měitiān dōu néng _________ dào xuéxiào, cóng bù chídào.",
+                fullSentence: "他每天都能按时到学校，从不迟到。",
+                sentenceTrans: "เขาสามารถมาถึงโรงเรียนได้ตรงเวลาทุกวัน ไม่เคยมาสายเลย",
+                options: [
+                    { word: "按时", pinyin: "ànshí", meaning: "ตรงเวลา / ตามเวลาที่กำหนด" },
+                    { word: "时刻", pinyin: "shíkè", meaning: "ตลอดเวลา / ช่วงเวลา" },
+                    { word: "临时", pinyin: "línshí", meaning: "ชั่วคราว / เฉพาะหน้า" },
+                    { word: "平时", pinyin: "píngshí", meaning: "ปกติทั่วไป / ยามปกติ" }
+                ],
+                correctWord: "按时",
+                explanation: "ประโยคแปลว่า 'เขาสามารถมาถึงโรงเรียนได้...ทุกวัน ไม่เคยมาสายเลย' จึงต้องใช้ 按时 (ตรงเวลา) ส่วน 时刻 แปลว่า ตลอดเวลา/ช่วงเวลา, 临时 แปลว่า ชั่วคราว และ 平时 แปลว่า ปกติทั่วไป"
+            },
+            {
+                id: 2,
+                zone: 1,
+                zoneName: "โซน 1: ป่าไผ่เริ่มต้น",
+                bossName: "หมีป่าทึบ",
+                bossEmoji: "🐻",
+                difficulty: "ด่านฝึกตน",
+                sentence: "这片森林的树长得___________。",
+                pinyin: "Zhè piàn sēnlín de shù zhǎng de ___________.",
+                fullSentence: "这片森林的树长得密。",
+                sentenceTrans: "ต้นไม้ในป่าผืนนี้ขึ้นอย่างหนาแน่น",
+                options: [
+                    { word: "浓", pinyin: "nóng", meaning: "เข้มข้น / หนา (หมอก/ชา/สี)" },
+                    { word: "密", pinyin: "mì", meaning: "หนาแน่น / ชิดติดกัน / ทึบ" },
+                    { word: "淡", pinyin: "dàn", meaning: "จืด / จาง / อ่อน" },
+                    { word: "深", pinyin: "shēn", meaning: "ลึก / เข้ม" }
+                ],
+                correctWord: "密",
+                explanation: "ประโยคแปลว่า 'ต้นไม้ในป่าผืนนี้ขึ้นอย่างหนาแน่น' คำว่า 密 ใช้ขยายการเรียงตัวหรือการขึ้นของต้นไม้/สิ่งของที่ชิดติดกันหนาแน่น ส่วน 浓 ใช้กับความเข้มข้น (เช่น ชา/หมอก/สี), 淡 แปลว่า จืด/จาง และ 深 แปลว่า ลึก/เข้ม"
+            },
+            {
+                id: 3,
+                zone: 1,
+                zoneName: "โซน 1: ป่าไผ่เริ่มต้น",
+                bossName: "กระเรียนพับกระดาษ",
+                bossEmoji: "🦢",
+                difficulty: "มินิบอสโซน 1",
+                sentence: "他把那张纸__________成了一个纸飞机。",
+                pinyin: "Tā bǎ nà zhāng zhǐ __________ chéng le yī gè zhǐ fēijī.",
+                fullSentence: "他把那张纸折成了一个纸飞机。",
+                sentenceTrans: "เขาพับกระดาษแผ่นนั้นให้กลายเป็นเครื่องบินกระดาษ",
+                options: [
+                    { word: "摆", pinyin: "bǎi", meaning: "จัดวาง / วางเรียง" },
+                    { word: "折", pinyin: "zhé", meaning: "พับ / หัก" },
+                    { word: "擦", pinyin: "cā", meaning: "เช็ด / ถู" },
+                    { word: "抄", pinyin: "chāo", meaning: "คัดลอก / ลอก" }
+                ],
+                correctWord: "折",
+                explanation: "ประโยคแปลว่า 'เขาพับกระดาษแผ่นนั้นให้กลายเป็นเครื่องบินกระดาษ' คำว่า 折 แปลว่า พับ ส่วน 摆 แปลว่า จัดวาง, 擦 แปลว่า เช็ด/ถู และ 抄 แปลว่า คัดลอก"
+            },
+            {
+                id: 4,
+                zone: 2,
+                zoneName: "โซน 2: เมืองหลวงยุทธภพ",
+                bossName: "พยัคฆ์ผู้จัดการ",
+                bossEmoji: "🐯",
+                difficulty: "ด่านจอมยุทธ์",
+                sentence: "他在公司__________总经理。",
+                pinyin: "Tā zài gōngsī __________ zǒngjīnglǐ.",
+                fullSentence: "他在公司担任总经理。",
+                sentenceTrans: "เขาดำรงตำแหน่งผู้จัดการทั่วไปในบริษัท",
+                options: [
+                    { word: "安排", pinyin: "ānpái", meaning: "จัดเตรียม / จัดการ" },
+                    { word: "管理", pinyin: "guǎnlǐ", meaning: "บริหารจัดการ / ดูแล" },
+                    { word: "负责", pinyin: "fùzé", meaning: "รับผิดชอบ" },
+                    { word: "担任", pinyin: "dānrèn", meaning: "ดำรงตำแหน่ง / รับหน้าที่" }
+                ],
+                correctWord: "担任",
+                explanation: "ประโยคแปลว่า 'เขาดำรงตำแหน่งผู้จัดการทั่วไปในบริษัท' คำว่า 担任 ต้องตามด้วยชื่อตำแหน่งหน้าที่ (เช่น 总经理) ส่วน 安排 แปลว่า จัดเตรียม, 管理 แปลว่า บริหารจัดการ และ 负责 แปลว่า รับผิดชอบ"
+            },
+            {
+                id: 5,
+                zone: 2,
+                zoneName: "โซน 2: เมืองหลวงยุทธภพ",
+                bossName: "เหยี่ยวสายฟ้า",
+                bossEmoji: "🦅",
+                difficulty: "ด่านจอมยุทธ์",
+                sentence: "他一听到这个好消息，__________打电话告诉了父母。",
+                pinyin: "Tā yī tīngdào zhège hǎo xiāoxi, __________ dǎ diànhuà gàosu le fùmǔ.",
+                fullSentence: "他一听到这个好消息，马上打电话告诉了父母。",
+                sentenceTrans: "พอเขาได้ยินข่าวดีนี้ ก็รีบโทรบอกพ่อแม่ทันที",
+                options: [
+                    { word: "马上", pinyin: "mǎshàng", meaning: "ทันที / ทันใดนั้น" },
+                    { word: "总是", pinyin: "zǒngshì", meaning: "เสมอๆ / มักจะ" },
+                    { word: "快要", pinyin: "kuàiyào", meaning: "ใกล้จะ / เกือบจะ" },
+                    { word: "终于", pinyin: "zhōngyú", meaning: "ในที่สุด" }
+                ],
+                correctWord: "马上",
+                explanation: "โครงสร้าง 一...就/马上... แปลว่า 'พอ...ก็...ทันที' ประโยคแปลว่า 'พอเขาได้ยินข่าวดีนี้ ก็รีบโทรบอกพ่อแม่ทันที' ส่วน 总是 แปลว่า เสมอๆ, 快要 แปลว่า ใกล้จะ และ 终于 แปลว่า ในที่สุด"
+            },
+            {
+                id: 6,
+                zone: 2,
+                zoneName: "โซน 2: เมืองหลวงยุทธภพ",
+                bossName: "เต่าปราชญ์เมธี",
+                bossEmoji: "🐢",
+                difficulty: "มินิบอสโซน 2",
+                sentence: "这个问题不__________，需要仔细分析。",
+                pinyin: "Zhège wèntí bù __________, xūyào zǐxì fēnxī.",
+                fullSentence: "这个问题不简单，需要仔细分析。",
+                sentenceTrans: "ปัญหานี้ไม่ง่าย ต้องวิเคราะห์อย่างละเอียดรอบคอบ",
+                options: [
+                    { word: "严重", pinyin: "yánzhòng", meaning: "ร้ายแรง / หนักหน่วง" },
+                    { word: "重要", pinyin: "zhòngyào", meaning: "สำคัญ" },
+                    { word: "简单", pinyin: "jiǎndān", meaning: "ง่าย / ไม่ซับซ้อน" },
+                    { word: "随便", pinyin: "suíbiàn", meaning: "ตามสบาย / ส่งเดช" }
+                ],
+                correctWord: "简单",
+                explanation: "ประโยคแปลว่า 'ปัญหานี้ไม่ง่าย ต้องวิเคราะห์อย่างละเอียดรอบคอบ' (สอดคล้องกับบริบทที่ต้องวิเคราะห์อย่างละเอียด) ส่วน 严重 แปลว่า ร้ายแรง/หนักหน่วง, 重要 แปลว่า สำคัญ และ 随便 แปลว่า ตามสบาย/ส่งเดช"
+            },
+            {
+                id: 7,
+                zone: 3,
+                zoneName: "โซน 3: หุบเขามังกรคำศัพท์",
+                bossName: "วานรอารมณ์ขัน",
+                bossEmoji: "🐵",
+                difficulty: "ด่านยอดฝีมือ",
+                sentence: "小王是一个很__________的人，他总能让别人笑起来。",
+                pinyin: "Xiǎo Wáng shì yī gè hěn __________ de rén, tā zǒng néng ràng biérén xiào qǐlái.",
+                fullSentence: "小王是一个很幽默的人，他总能让别人笑起来。",
+                sentenceTrans: "เสี่ยวหวังเป็นคนที่มีอารมณ์ขันมาก เขามักจะทำให้คนอื่นหัวเราะได้เสมอ",
+                options: [
+                    { word: "幽默", pinyin: "yōumò", meaning: "อารมณ์ขัน / มีอารมณ์ขัน" },
+                    { word: "善良", pinyin: "shànliáng", meaning: "ใจดี / มีเมตตา" },
+                    { word: "勇敢", pinyin: "yǒnggǎn", meaning: "กล้าหาญ" },
+                    { word: "自私", pinyin: "zìsī", meaning: "เห็นแก่ตัว" }
+                ],
+                correctWord: "幽默",
+                explanation: "ประโยคแปลว่า 'เสี่ยวหวังเป็นคนที่มีอารมณ์ขันมาก เขามักจะทำให้คนอื่นหัวเราะได้เสมอ' ส่วน 善良 แปลว่า ใจดี/มีเมตตา, 勇敢 แปลว่า กล้าหาญ และ 自私 แปลว่า เห็นแก่ตัว"
+            },
+            {
+                id: 8,
+                zone: 3,
+                zoneName: "โซน 3: หุบเขามังกรคำศัพท์",
+                bossName: "กิเลนรากฐาน",
+                bossEmoji: "🦄",
+                difficulty: "ด่านรองบอส",
+                sentence: "拼音是学习中文__________，一定要重视。",
+                pinyin: "Pīnyīn shì xuéxí Zhōngwén __________, yīdìng yào zhòngshì.",
+                fullSentence: "拼音是学习中文基础，一定要重视。",
+                sentenceTrans: "พินอินเป็นพื้นฐานของการเรียนภาษาจีน ต้องให้ความสำคัญอย่างยิ่ง",
+                options: [
+                    { word: "初级", pinyin: "chūjí", meaning: "ระดับต้น" },
+                    { word: "基础", pinyin: "jīchǔ", meaning: "พื้นฐาน / รากฐาน (คำนาม)" },
+                    { word: "基本", pinyin: "jīběn", meaning: "พื้นฐาน / เบื้องต้น (คำคุณศัพท์)" },
+                    { word: "水平", pinyin: "shuǐpíng", meaning: "ระดับความสามารถ" }
+                ],
+                correctWord: "基础",
+                explanation: "ประโยคแปลว่า 'พินอินเป็นพื้นฐานของการเรียนภาษาจีน ต้องให้ความสำคัญอย่างยิ่ง' คำว่า 基础 เป็นคำนามแปลว่า รากฐาน/พื้นฐาน ส่วน 基本 มักใช้เป็นคำคุณศัพท์ (พื้นฐาน/เบื้องต้น), 初级 แปลว่า ระดับต้น และ 水平 แปลว่า ระดับความสามารถ"
+            },
+            {
+                id: 9,
+                zone: 3,
+                zoneName: "โซน 3: หุบเขามังกรคำศัพท์",
+                bossName: "มังกรสำนวน A-Level",
+                bossEmoji: "🐲",
+                difficulty: "👑 บอสใหญ่ด่านสุดท้าย",
+                sentence: "小朋友们在公园里玩得__________。",
+                pinyin: "Xiǎopéngyoumen zài gōngyuán lǐ wán de __________.",
+                fullSentence: "小朋友们在公园里玩得兴高采烈。",
+                sentenceTrans: "เด็กๆ เล่นกันอยู่ในสวนสาธารณะอย่างร่าเริงเบิกบานใจ",
+                options: [
+                    { word: "一帆风顺", pinyin: "yīfān fēngshùn", meaning: "ราบรื่นไร้อุปสรรค" },
+                    { word: "胡说八道", pinyin: "húshuō bādào", meaning: "พูดจาเหลวไหลไร้สาระ" },
+                    { word: "莫名其妙", pinyin: "mòmíng qímiào", meaning: "งงงวยไม่เข้าใจเหตุผล" },
+                    { word: "兴高采烈", pinyin: "xìnggāo cǎiliè", meaning: "เบิกบานใจ / ร่าเริงคึกคัก" }
+                ],
+                correctWord: "兴高采烈",
+                explanation: "ประโยคแปลว่า 'เด็กๆ เล่นกันอยู่ในสวนสาธารณะอย่างร่าเริงเบิกบานใจ' ส่วน 一帆风顺 แปลว่า ราบรื่นไร้อุปสรรค (มักใช้อวยพรการเดินทาง/การทำงาน), 胡说八道 แปลว่า พูดจาเหลวไหล และ 莫名其妙 แปลว่า งงงวยไม่เข้าใจเหตุผล"
+            }
+        ];
+
+        // ==========================================
+        // 3. GAME STATE MANAGEMENT
+        // ==========================================
+        let gameState = {
+            showPinyin: true,
+            hp: 3,
+            maxHp: 3,
+            score: 0,
+            combo: 0,
+            maxCombo: 0,
+            currentStageIndex: 0,
+            stageAttempts: {}, // { stageId: wrongCountInCurrentRun }
+            completedStages: {}, // { stageId: starsEarned (1-3) }
+            shuffleOptions: false,
+            answeredCurrent: false
+        };
+
+        // ==========================================
+        // 4. SCREEN NAVIGATION & UI UPDATES
+        // ==========================================
+        function showScreen(screenName) {
+            const screens = ['screenStart', 'screenMap', 'screenBattle', 'screenSummary'];
+            screens.forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+
+            const btnMapNav = document.getElementById('btnMapNav');
+            const hudStats = document.getElementById('hudStats');
+
+            if (screenName === 'start') {
+                document.getElementById('screenStart').classList.remove('hidden');
+                btnMapNav.classList.add('hidden');
+                hudStats.classList.add('hidden');
+            } else if (screenName === 'map') {
+                renderMap();
+                document.getElementById('screenMap').classList.remove('hidden');
+                btnMapNav.classList.add('hidden');
+                hudStats.classList.remove('hidden');
+            } else if (screenName === 'battle') {
+                document.getElementById('screenBattle').classList.remove('hidden');
+                btnMapNav.classList.remove('hidden');
+                hudStats.classList.remove('hidden');
+            } else if (screenName === 'summary') {
+                renderSummary();
+                document.getElementById('screenSummary').classList.remove('hidden');
+                btnMapNav.classList.remove('hidden');
+                hudStats.classList.remove('hidden');
+            }
+            updateHUD();
+        }
+
+        function updateHUD() {
+            // Update Hearts
+            let heartsStr = '';
+            for (let i = 0; i < gameState.maxHp; i++) {
+                heartsStr += i < gameState.hp ? '❤️' : '🖤';
+            }
+            document.getElementById('hpDisplay').textContent = heartsStr;
+
+            // Update Score
+            document.getElementById('scoreDisplay').textContent = gameState.score.toLocaleString();
+
+            // Update Combo
+            const comboBadge = document.getElementById('comboBadge');
+            if (gameState.combo >= 2) {
+                comboBadge.classList.remove('hidden');
+                comboBadge.classList.add('flex');
+                document.getElementById('comboText').textContent = `Combo x${gameState.combo}`;
+            } else {
+                comboBadge.classList.add('hidden');
+                comboBadge.classList.remove('flex');
+            }
+        }
+
+        function togglePinyin() {
+            playSound('click');
+            gameState.showPinyin = !gameState.showPinyin;
+            const btn = document.getElementById('btnPinyinToggle');
+            const statusText = document.getElementById('pinyinStatusText');
+
+            if (gameState.showPinyin) {
+                btn.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold border-2 transition shadow-sm bg-sky-500 text-white border-sky-600 cursor-pointer";
+                statusText.textContent = "เปิด";
+            } else {
+                btn.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold border-2 transition shadow-sm bg-slate-100 text-slate-600 border-slate-300 cursor-pointer";
+                statusText.textContent = "ปิด";
+            }
+
+            // Update live battle screen if currently visible
+            const qPinyin = document.getElementById('questionPinyin');
+            if (qPinyin) {
+                qPinyin.style.display = gameState.showPinyin ? 'block' : 'none';
+            }
+            document.querySelectorAll('.option-pinyin').forEach(el => {
+                el.style.display = gameState.showPinyin ? 'block' : 'none';
+            });
+        }
+
+        // ==========================================
+        // 5. START, MAP & STAGE SELECTION
+        // ==========================================
+        function startNewGame() {
+            playSound('click');
+            gameState.hp = 3;
+            gameState.score = 0;
+            gameState.combo = 0;
+            gameState.maxCombo = 0;
+            gameState.completedStages = {};
+            gameState.stageAttempts = {};
+            showScreen('map');
+        }
+
+        function renderMap() {
+            const container = document.getElementById('zonesContainer');
+            container.innerHTML = '';
+
+            const completedCount = Object.keys(gameState.completedStages).length;
+            document.getElementById('mapProgressText').textContent = `${completedCount} / 9 ด่าน`;
+
+            // Show summary button if all 9 stages completed
+            const btnSummary = document.getElementById('btnViewSummaryFromMap');
+            if (completedCount === 9) {
+                btnSummary.classList.remove('hidden');
+            } else {
+                btnSummary.classList.add('hidden');
+            }
+
+            const zones = [
+                { id: 1, title: "โซนที่ 1: ป่าไผ่เริ่มต้น (ด่าน 1 - 3)", bg: "from-emerald-50 to-teal-50", border: "border-emerald-200", badge: "bg-emerald-500" },
+                { id: 2, title: "โซนที่ 2: เมืองหลวงยุทธภพ (ด่าน 4 - 6)", bg: "from-sky-50 to-indigo-50", border: "border-sky-200", badge: "bg-sky-500" },
+                { id: 3, title: "โซนที่ 3: หุบเขามังกรคำศัพท์ (ด่าน 7 - 9)", bg: "from-pink-50 to-purple-50", border: "border-pink-200", badge: "bg-pink-600" }
+            ];
+
+            zones.forEach(zone => {
+                const zoneStages = STAGES_DATA.filter(s => s.zone === zone.id);
+                const zoneDiv = document.createElement('div');
+                zoneDiv.className = `rounded-2xl p-4 sm:p-5 bg-gradient-to-r ${zone.bg} border-2 ${zone.border}`;
+
+                let cardsHtml = `<div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">`;
+
+                zoneStages.forEach(stage => {
+                    const isCompleted = gameState.completedStages[stage.id] !== undefined;
+                    // Unlock logic: Stage 1 is always unlocked, or if previous stage is completed
+                    const isUnlocked = stage.id === 1 || gameState.completedStages[stage.id - 1] !== undefined || isCompleted;
+                    const stars = gameState.completedStages[stage.id] || 0;
+                    const isBoss = stage.id === 9;
+
+                    let starDisplay = '';
+                    for (let i = 1; i <= 3; i++) {
+                        starDisplay += i <= stars ? '⭐' : '☆';
+                    }
+
+                    if (isUnlocked) {
+                        cardsHtml += `
+                            <button onclick="loadStage(${stage.id - 1})" class="btn-3d text-left bg-white hover:bg-amber-50/60 rounded-2xl p-3.5 border-2 ${isCompleted ? 'border-emerald-400' : (isBoss ? 'border-rose-400' : 'border-purple-300')} shadow-sm flex items-center justify-between gap-3 cursor-pointer group">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-12 h-12 rounded-xl ${isBoss ? 'bg-gradient-to-br from-rose-500 to-purple-600' : 'bg-gradient-to-br from-indigo-400 to-purple-500'} text-white flex items-center justify-center text-2xl shadow-inner group-hover:scale-105 transition">
+                                        ${stage.bossEmoji}
+                                    </div>
+                                    <div>
+                                        <div class="text-[11px] font-bold ${isBoss ? 'text-rose-600' : 'text-purple-600'}">
+                                            ด่านที่ ${stage.id} ${isBoss ? '👑 BOSS' : ''}
+                                        </div>
+                                        <div class="font-extrabold text-slate-800 text-sm leading-tight">
+                                            ${stage.bossName}
+                                        </div>
+                                        <div class="text-xs mt-1 tracking-wider ${isCompleted ? 'text-amber-500' : 'text-slate-300'}">
+                                            ${starDisplay}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-lg font-bold ${isCompleted ? 'text-emerald-500' : 'text-purple-500'}">
+                                    ${isCompleted ? '✅' : '▶️'}
+                                </div>
+                            </button>
+                        `;
+                    } else {
+                        cardsHtml += `
+                            <div class="bg-slate-100/80 rounded-2xl p-3.5 border-2 border-slate-200 flex items-center justify-between gap-3 opacity-65 cursor-not-allowed">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-12 h-12 rounded-xl bg-slate-300 text-slate-500 flex items-center justify-center text-2xl">
+                                        🔒
+                                    </div>
+                                    <div>
+                                        <div class="text-[11px] font-bold text-slate-500">ด่านที่ ${stage.id}</div>
+                                        <div class="font-bold text-slate-500 text-sm">${stage.bossName}</div>
+                                        <div class="text-[11px] text-slate-400 mt-0.5">ผ่านด่าน ${stage.id - 1} เพื่อปลดล็อก</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+
+                cardsHtml += `</div>`;
+
+                zoneDiv.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <span class="${zone.badge} text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+                            ${zone.title}
+                        </span>
+                    </div>
+                    ${cardsHtml}
+                `;
+
+                container.appendChild(zoneDiv);
+            });
+        }
+
+        // ==========================================
+        // 6. BATTLE & QUESTION ENGINE
+        // ==========================================
+        function loadStage(index) {
+            playSound('click');
+            gameState.currentStageIndex = index;
+            gameState.answeredCurrent = false;
+            const stage = STAGES_DATA[index];
+
+            // Reset attempts for this stage
+            gameState.stageAttempts[stage.id] = 0;
+
+            // Ensure HP is at least 1 when entering a stage
+            if (gameState.hp <= 0) {
+                gameState.hp = 3;
+            }
+
+            // Populate Stage Headers & Arena
+            document.getElementById('battleZoneBadge').textContent = stage.zoneName;
+            document.getElementById('battleStageTitle').textContent = `ด่านที่ ${stage.id} / 9`;
+            document.getElementById('battleDifficultyBadge').textContent = stage.difficulty;
+            document.getElementById('bossNameBadge').textContent = stage.bossName;
+            document.getElementById('bossSprite').textContent = stage.bossEmoji;
+            document.getElementById('battleStatusEmoji').textContent = '⚔️';
+            document.getElementById('battleActionText').textContent = 'เลือกคำตอบเพื่อโจมตี!';
+
+            // Question Text & Pinyin
+            document.getElementById('questionChinese').textContent = stage.sentence;
+            const qPinyin = document.getElementById('questionPinyin');
+            qPinyin.textContent = stage.pinyin;
+            qPinyin.style.display = gameState.showPinyin ? 'block' : 'none';
+
+            // Prepare Options (optionally shuffled on replay)
+            let opts = [...stage.options];
+            if (gameState.shuffleOptions) {
+                opts.sort(() => Math.random() - 0.5);
+            }
+
+            const optionsGrid = document.getElementById('optionsGrid');
+            optionsGrid.innerHTML = '';
+
+            const labels = ['A', 'B', 'C', 'D'];
+            opts.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "option-btn btn-3d bg-white hover:bg-indigo-50 border-2 border-indigo-200 hover:border-indigo-400 rounded-2xl p-4 text-left flex items-center gap-4 shadow-sm cursor-pointer transition-all";
+                btn.dataset.word = opt.word;
+                btn.onclick = () => checkAnswer(btn, opt);
+
+                btn.innerHTML = `
+                    <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-700 font-extrabold flex items-center justify-center text-base shrink-0">
+                        ${labels[idx]}
+                    </div>
+                    <div>
+                        <div class="zh-font text-2xl sm:text-3xl font-bold text-slate-800 leading-tight">
+                            ${opt.word}
+                        </div>
+                        <div class="option-pinyin text-xs sm:text-sm font-medium text-sky-600 mt-0.5" style="display: ${gameState.showPinyin ? 'block' : 'none'};">
+                            ${opt.pinyin}
+                        </div>
+                    </div>
+                `;
+                optionsGrid.appendChild(btn);
+            });
+
+            showScreen('battle');
+        }
+
+        function checkAnswer(btnElement, selectedOpt) {
+            if (gameState.answeredCurrent) return;
+
+            const stage = STAGES_DATA[gameState.currentStageIndex];
+            const isCorrect = selectedOpt.word === stage.correctWord;
+
+            const heroSprite = document.getElementById('heroSprite');
+            const bossSprite = document.getElementById('bossSprite');
+            const arena = document.getElementById('battleArena');
+
+            if (isCorrect) {
+                // CORRECT ANSWER!
+                gameState.answeredCurrent = true;
+                playSound('correct');
+
+                // Hero attack animation
+                heroSprite.classList.remove('animate-attack-hero');
+                void heroSprite.offsetWidth;
+                heroSprite.classList.add('animate-attack-hero');
+
+                setTimeout(() => {
+                    bossSprite.classList.add('animate-shake');
+                    bossSprite.textContent = '💥';
+                }, 180);
+
+                // Style selected button green
+                btnElement.className = "option-btn btn-3d bg-emerald-500 text-white border-2 border-emerald-700 rounded-2xl p-4 text-left flex items-center gap-4 shadow-md";
+                btnElement.querySelector('div:first-child').className = "w-10 h-10 rounded-xl bg-white text-emerald-700 font-extrabold flex items-center justify-center text-base shrink-0";
+                btnElement.querySelector('.zh-font').classList.replace('text-slate-800', 'text-white');
+                const pEl = btnElement.querySelector('.option-pinyin');
+                if (pEl) pEl.classList.replace('text-sky-600', 'text-emerald-100');
+
+                // Disable all option buttons
+                document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+
+                // Calculate Combo & Score
+                gameState.combo += 1;
+                if (gameState.combo > gameState.maxCombo) {
+                    gameState.maxCombo = gameState.combo;
+                }
+
+                const wrongCount = gameState.stageAttempts[stage.id] || 0;
+                const starsEarned = wrongCount === 0 ? 3 : (wrongCount === 1 ? 2 : 1);
+                const basePoints = 100;
+                const comboBonus = (gameState.combo - 1) * 25;
+                const totalEarned = basePoints + comboBonus;
+
+                gameState.score += totalEarned;
+
+                // Save highest stars for this stage
+                const prevStars = gameState.completedStages[stage.id] || 0;
+                if (starsEarned > prevStars) {
+                    gameState.completedStages[stage.id] = starsEarned;
+                }
+
+                updateHUD();
+
+                document.getElementById('battleStatusEmoji').textContent = '🎯';
+                document.getElementById('battleActionText').textContent = `โจมตีสำเร็จ! +${totalEarned} คะแนน`;
+
+                // Show Explanation Modal after short animation delay
+                setTimeout(() => {
+                    showExplanationModal(stage, totalEarned, starsEarned);
+                }, 650);
+
+            } else {
+                // WRONG ANSWER!
+                playSound('wrong');
+                gameState.combo = 0;
+                gameState.hp = Math.max(0, gameState.hp - 1);
+                gameState.stageAttempts[stage.id] = (gameState.stageAttempts[stage.id] || 0) + 1;
+
+                // Boss attack & Arena shake
+                bossSprite.classList.remove('animate-attack-boss');
+                void bossSprite.offsetWidth;
+                bossSprite.classList.add('animate-attack-boss');
+
+                arena.classList.remove('animate-shake');
+                void arena.offsetWidth;
+                arena.classList.add('animate-shake');
+
+                // Mark wrong button red & disable it
+                btnElement.disabled = true;
+                btnElement.className = "option-btn bg-rose-100 border-2 border-rose-300 rounded-2xl p-4 text-left flex items-center gap-4 opacity-75 cursor-not-allowed";
+                btnElement.querySelector('div:first-child').className = "w-10 h-10 rounded-xl bg-rose-500 text-white font-extrabold flex items-center justify-center text-base shrink-0";
+                btnElement.querySelector('div:first-child').textContent = "✕";
+
+                document.getElementById('battleStatusEmoji').textContent = '💥';
+                document.getElementById('battleActionText').textContent = 'พลาดเป้า! ลองเลือกข้ออื่นดูนะ';
+
+                updateHUD();
+
+                // Check Game Over (HP == 0)
+                if (gameState.hp === 0) {
+                    setTimeout(() => {
+                        document.getElementById('gameOverModal').classList.remove('hidden');
+                    }, 500);
+                }
+            }
+        }
+
+        // ==========================================
+        // 7. EXPLANATION MODAL & PROGRESSION
+        // ==========================================
+        function showExplanationModal(stage, pointsEarned, starsEarned) {
+            const correctObj = stage.options.find(o => o.word === stage.correctWord);
+
+            document.getElementById('modalScoreEarned').textContent = `+${pointsEarned} คะแนน (คอมโบ x${gameState.combo})`;
+            
+            let starsStr = '';
+            for (let i = 1; i <= 3; i++) {
+                starsStr += i <= starsEarned ? '⭐' : '☆';
+            }
+            document.getElementById('modalStarsEarned').textContent = starsStr;
+
+            document.getElementById('modalCorrectWord').textContent = correctObj.word;
+            document.getElementById('modalCorrectPinyin').textContent = `(${correctObj.pinyin})`;
+            document.getElementById('modalCorrectMeaning').textContent = `— ${correctObj.meaning}`;
+
+            document.getElementById('modalFullSentence').textContent = stage.fullSentence;
+            document.getElementById('modalSentenceTrans').textContent = stage.sentenceTrans;
+            document.getElementById('modalExplanationText').textContent = stage.explanation;
+
+            const btnNext = document.getElementById('btnModalNext');
+            if (gameState.currentStageIndex < STAGES_DATA.length - 1) {
+                btnNext.textContent = `ไปด่านที่ ${stage.id + 1} ถัดไป ➡️`;
+            } else {
+                btnNext.textContent = `🏆 ดูสรุปผลชัยชนะ!`;
+            }
+
+            document.getElementById('explanationModal').classList.remove('hidden');
+        }
+
+        function handleModalNext() {
+            playSound('click');
+            document.getElementById('explanationModal').classList.add('hidden');
+
+            if (gameState.currentStageIndex < STAGES_DATA.length - 1) {
+                loadStage(gameState.currentStageIndex + 1);
+            } else {
+                playSound('victory');
+                showScreen('summary');
+            }
+        }
+
+        function retryCurrentStage() {
+            playSound('click');
+            document.getElementById('gameOverModal').classList.add('hidden');
+            gameState.hp = 3;
+            updateHUD();
+            loadStage(gameState.currentStageIndex);
+        }
+
+        function closeGameOverToMap() {
+            playSound('click');
+            document.getElementById('gameOverModal').classList.add('hidden');
+            gameState.hp = 3;
+            updateHUD();
+            showScreen('map');
+        }
+
+        // ==========================================
+        // 8. SUMMARY & REPLAY FUNCTIONS
+        // ==========================================
+        function showSummaryScreen() {
+            playSound('victory');
+            showScreen('summary');
+        }
+
+        function renderSummary() {
+            const totalStars = Object.values(gameState.completedStages).reduce((a, b) => a + b, 0);
+            document.getElementById('finalScoreText').textContent = gameState.score.toLocaleString();
+            document.getElementById('finalStarsText').textContent = `${totalStars} / 27 ⭐`;
+            document.getElementById('finalMaxComboText').textContent = `x${gameState.maxCombo}`;
+
+            // Rank Title based on stars
+            let rankTitle = "ศิษย์เอกสำนักจีน";
+            let subtitle = "เก่งมาก! ฝึกฝนทบทวนอีกนิด รับรองคะแนน A-Level พุ่งกระฉูด!";
+            if (totalStars >= 25) {
+                rankTitle = "👑 ปรมาจารย์ A-Level ภาษาจีน";
+                subtitle = "ไร้เทียมทาน! คุณแม่นยำทั้งคำศัพท์และสำนวนระดับสูงอย่างยอดเยี่ยม!";
+            } else if (totalStars >= 18) {
+                rankTitle = "⚔️ ยอดจอมยุทธ์ภาษาจีน";
+                subtitle = "ยอดเยี่ยมมาก! คุณผ่านด่านทดสอบสุดหินมาได้อย่างน่าประทับใจ!";
+            }
+
+            document.getElementById('summaryRankTitle').textContent = rankTitle;
+            document.getElementById('summarySubtitle').textContent = subtitle;
+
+            // Render Vocabulary Review List
+            const listContainer = document.getElementById('vocabReviewList');
+            listContainer.innerHTML = '';
+
+            STAGES_DATA.forEach(stage => {
+                const correctObj = stage.options.find(o => o.word === stage.correctWord);
+                const item = document.createElement('div');
+                item.className = "bg-white rounded-xl p-3 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-xs";
+                item.innerHTML = `
+                    <div class="flex items-center gap-2.5">
+                        <span class="bg-purple-100 text-purple-700 font-bold text-xs px-2.5 py-1 rounded-lg shrink-0">
+                            ข้อ ${stage.id}
+                        </span>
+                        <div>
+                            <span class="zh-font font-extrabold text-lg text-slate-800">${correctObj.word}</span>
+                            <span class="text-xs font-semibold text-sky-600 ml-1">(${correctObj.pinyin})</span>
+                            <span class="text-xs sm:text-sm text-slate-600 block sm:inline sm:ml-2">— ${correctObj.meaning}</span>
+                        </div>
+                    </div>
+                    <div class="text-xs text-slate-400 zh-font truncate max-w-xs">
+                        ${stage.fullSentence}
+                    </div>
+                `;
+                listContainer.appendChild(item);
+            });
+        }
+
+        function replayWithShuffle() {
+            playSound('click');
+            gameState.hp = 3;
+            gameState.score = 0;
+            gameState.combo = 0;
+            gameState.maxCombo = 0;
+            gameState.completedStages = {};
+            gameState.stageAttempts = {};
+            gameState.shuffleOptions = true; // Shuffle options on replay
+            loadStage(0);
+        }
+
+        function resetGameConfirm() {
+            playSound('click');
+            document.getElementById('confirmResetModal').classList.remove('hidden');
+        }
+
+        function executeFullReset() {
+            playSound('click');
+            document.getElementById('confirmResetModal').classList.add('hidden');
+            gameState.hp = 3;
+            gameState.score = 0;
+            gameState.combo = 0;
+            gameState.maxCombo = 0;
+            gameState.completedStages = {};
+            gameState.stageAttempts = {};
+            gameState.shuffleOptions = false;
+            showScreen('start');
+        }
+
+        // Initialize on load
+        window.onload = () => {
+            showScreen('start');
+        };
+    </script>
+</body>
+</html>
